@@ -11,6 +11,7 @@ jobs:
   release:
     uses: kungfu-trader/workflows/.github/workflows/.release-new-version.yml@v1
     with:
+      protect-dev-branches: true
       publish-aws-ci: false
       publish-aws-user: false
     secrets:
