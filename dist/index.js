@@ -259,12 +259,14 @@ async function ensureBranchesProtection(argv) {
 }
 
 async function suspendBranchesProtection(argv, branchPatterns = ProtectedBranchPatterns) {
-  console.log('suspendBranchesProtection', argv, branchPatterns);
+  console.log('suspendBranchesProtection', argv, argv.protection, branchPatterns);
   if (!argv.protection) return;
 
+  console.log('suspendBranchesProtection1');
   const octokit = github.getOctokit(argv.token);
+  console.log('suspendBranchesProtection2');
   const ruleIds = await getBranchProtectionRulesMap(argv);
-  console.log('ruleIds', ruleIds);
+  console.log('ruleIds', ruleIds, branchPatterns);
   for (const pattern of branchPatterns) {
     const id = ruleIds[pattern];
     const mutation = `
@@ -304,7 +306,7 @@ async function mergeCall(argv, keyword) {
   };
   const branchPatterns = pushTargets[keyword].map((p) => `${p}/*/*`);
   console.log(`> try to suspend protection for branch patterns ${branchPatterns.join(', ')}`);
-  await suspendBranchesProtection(argv, branchPatterns).catch(console.error);
+  await suspendBranchesProtection(argv, branchPatterns);
 
   const octokit = github.getOctokit(argv.token);
   const headVersion = getCurrentVersion(argv.cwd);
