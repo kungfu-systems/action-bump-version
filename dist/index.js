@@ -125,6 +125,16 @@ async function gitCall(...args) {
   console.log(output);
 }
 
+async function octokitGraphqlCall(argv, query) {
+  const octokit = github.getOctokit(argv.token);
+  const result = await octokit.graphql(query, {
+    headers: {
+      connection: 'keep-alive',
+    },
+  });
+  return result;
+}
+
 async function bumpCall(argv, keyword, message, tag = true) {
   const version = getCurrentVersion(argv.cwd);
   const nextVersion = semver.inc(version, keyword, 'alpha'); // Get next version to make up message
@@ -180,11 +190,15 @@ async function publishCall(argv) {
 
 async function getBranchProtectionRulesMap(argv) {
   const ruleIds = {};
-  const octokit = github.getOctokit(argv.token);
 
-  const { repository } = await octokit.graphql(`query{repository(name:"${argv.repo}",owner:"${argv.owner}"){id}}`);
+  const { repository } = await octokitGraphqlCall(
+    argv,
+    `query{repository(name:"${argv.repo}",owner:"${argv.owner}"){id}}`,
+  );
 
-  const rulesQuery = await octokit.graphql(`
+  const rulesQuery = await octokitGraphqlCall(
+    argv,
+    `
         query {
           repository(name: "${argv.repo}", owner: "${argv.owner}") {
             branchProtectionRules(first:100) {
@@ -195,7 +209,8 @@ async function getBranchProtectionRulesMap(argv) {
               }
             }
           }
-        }`);
+        }`,
+  );
 
   for (const rule of rulesQuery.repository.branchProtectionRules.nodes) {
     ruleIds[rule.pattern] = rule.id;
@@ -203,7 +218,9 @@ async function getBranchProtectionRulesMap(argv) {
 
   for (const pattern of ProtectedBranchPatterns.filter((p) => !(p in ruleIds))) {
     console.log(`> creating protection rule for branch name pattern ${pattern}`);
-    const { createBranchProtectionRule } = await octokit.graphql(`
+    const { createBranchProtectionRule } = await octokitGraphqlCall(
+      argv,
+      `
       mutation {
         createBranchProtectionRule(input: {
           repositoryId: "${repository.id}"
@@ -212,7 +229,8 @@ async function getBranchProtectionRulesMap(argv) {
           branchProtectionRule { id }
         }
       }
-    `);
+    `,
+    );
     ruleIds[pattern] = createBranchProtectionRule.branchProtectionRule.id;
   }
   return ruleIds;
@@ -221,7 +239,6 @@ async function getBranchProtectionRulesMap(argv) {
 async function ensureBranchesProtection(argv) {
   if (!argv.protection) return;
 
-  const octokit = github.getOctokit(argv.token);
   const ruleIds = await getBranchProtectionRulesMap(argv);
   for (const pattern in ruleIds) {
     const id = ruleIds[pattern];
@@ -254,7 +271,7 @@ async function ensureBranchesProtection(argv) {
       console.log(mutation);
       continue;
     }
-    await octokit.graphql(mutation);
+    await octokitGraphqlCall(argv, mutation);
   }
 }
 
@@ -263,8 +280,6 @@ async function suspendBranchesProtection(argv, branchPatterns = ProtectedBranchP
   if (!argv.protection) return;
 
   console.log('suspendBranchesProtection1');
-  const octokit = github.getOctokit(argv.token);
-  console.log('suspendBranchesProtection2');
   const ruleIds = await getBranchProtectionRulesMap(argv);
   console.log('ruleIds', ruleIds, branchPatterns);
   for (const pattern of branchPatterns) {
@@ -293,7 +308,7 @@ async function suspendBranchesProtection(argv, branchPatterns = ProtectedBranchP
       console.log(mutation);
       continue;
     }
-    await octokit.graphql(mutation);
+    await octokitGraphqlCall(argv, mutation);
   }
 }
 
@@ -430,8 +445,9 @@ async function mergeCall(argv, keyword) {
 }
 
 exports.resetDefaultBranch = async function (argv) {
-  const octokit = github.getOctokit(argv.token);
-  const lastDevVersion = await octokit.graphql(`
+  const lastDevVersion = await octokitGraphqlCall(
+    argv,
+    `
     query {
       repository(owner: "${argv.owner}", name: "${argv.repo}") {
         refs(refPrefix: "refs/heads/dev/", last: 1) {
@@ -442,7 +458,8 @@ exports.resetDefaultBranch = async function (argv) {
           } 
         }
       }
-    }`);
+    }`,
+  );
   if (typeof lastDevVersion.repository.refs.edges[0] === 'undefined') {
     return;
   }
