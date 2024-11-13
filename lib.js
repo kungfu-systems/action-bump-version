@@ -121,7 +121,11 @@ async function gitCall(...args) {
 
 async function octokitGraphqlCall(argv, query) {
   const octokit = github.getOctokit(argv.token);
-  const result = await octokit.graphql(query);
+  const result = await octokit.graphql(query, {
+    headers: {
+      Connection: 'close',
+    },
+  });
   return result;
 }
 
