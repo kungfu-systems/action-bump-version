@@ -185,13 +185,11 @@ async function publishCall(argv) {
 async function getBranchProtectionRulesMap(argv) {
   const ruleIds = {};
 
-  console.log('> get branch protection rules map');
   const { repository } = await octokitGraphqlCall(
     argv,
     `query{repository(name:"${argv.repo}",owner:"${argv.owner}"){id}}`,
   );
 
-  console.log('> get branch protection rules');
   const rulesQuery = await octokitGraphqlCall(
     argv,
     `
@@ -272,12 +270,9 @@ async function ensureBranchesProtection(argv) {
 }
 
 async function suspendBranchesProtection(argv, branchPatterns = ProtectedBranchPatterns) {
-  console.log('suspendBranchesProtection', argv, argv.protection, branchPatterns);
   if (!argv.protection) return;
 
-  console.log('suspendBranchesProtection1');
   const ruleIds = await getBranchProtectionRulesMap(argv);
-  console.log('ruleIds', ruleIds, branchPatterns);
   for (const pattern of branchPatterns) {
     const id = ruleIds[pattern];
     const mutation = `
@@ -316,8 +311,7 @@ async function mergeCall(argv, keyword) {
     prerelease: ['dev'],
   };
   const branchPatterns = pushTargets[keyword].map((p) => `${p}/*/*`);
-  console.log(`> try to suspend protection for branch patterns ${branchPatterns.join(', ')}`);
-  await suspendBranchesProtection(argv, branchPatterns);
+  await suspendBranchesProtection(argv, branchPatterns).catch(console.error);
 
   const octokit = github.getOctokit(argv.token);
   const headVersion = getCurrentVersion(argv.cwd);
