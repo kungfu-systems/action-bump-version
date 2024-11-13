@@ -121,7 +121,11 @@ async function gitCall(...args) {
 
 async function octokitGraphqlCall(argv, query) {
   const octokit = github.getOctokit(argv.token);
-  const result = await octokit.graphql(query);
+  const result = await octokit.graphql(query, {
+    headers: {
+      Connection: 'close',
+    },
+  });
   return result;
 }
 
@@ -181,11 +185,13 @@ async function publishCall(argv) {
 async function getBranchProtectionRulesMap(argv) {
   const ruleIds = {};
 
+  console.log('> get branch protection rules map');
   const { repository } = await octokitGraphqlCall(
     argv,
     `query{repository(name:"${argv.repo}",owner:"${argv.owner}"){id}}`,
   );
 
+  console.log('> get branch protection rules');
   const rulesQuery = await octokitGraphqlCall(
     argv,
     `
