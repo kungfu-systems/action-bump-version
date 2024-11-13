@@ -140,10 +140,15 @@ if (process.env.GITHUB_ACTION) {
   const configPath = path.join(path.dirname(__dirname), 'package.json'); // Find package.json for dist/index.js
   const config = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath)) : {};
   if (config.name && process.env.GITHUB_ACTION_REPOSITORY === config.name.slice(1)) {
-    main().catch((error) => {
-      console.error(error);
-      core.setFailed(error.message);
-      tryClosePullRequest(error).catch(console.error);
-    });
+    main()
+      .catch((error) => {
+        console.error(error);
+        core.setFailed(error.message);
+        tryClosePullRequest(error).catch(console.error);
+      })
+      .finally(() => {
+        process.exitCode = 0;
+        process.exit(0);
+      });
   }
 }
