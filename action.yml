@@ -17,6 +17,9 @@ inputs:
   protect-dev-branches:
     description: "Choices [true/false]"
     default: "false"
+  reset-default-branch:
+    description: "Choices [true/false]"
+    default: "true"
 runs:
   using: "node16"
   main: "dist/index.js"
