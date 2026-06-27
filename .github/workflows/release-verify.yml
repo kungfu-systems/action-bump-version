@@ -9,7 +9,7 @@ on:
 
 jobs:
   try:
-    uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@dev/v1/v1.2
+    uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@ci-release-token-runner-stable
     with:
       enable-macos: false
       enable-windows: false
