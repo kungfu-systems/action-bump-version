@@ -167,7 +167,7 @@ async function publishCall(argv) {
     console.log('> detected lerna, use yarn workspaces publish');
     const result = spawnSync('yarn', ['-s', 'workspaces', 'info'], spawnOpts);
     const output = result.output.filter((e) => e && e.length > 0).toString();
-    if (output.toString().split(' ')[0] != 'error') {
+    if (output.toString().split(' ')[0] !== 'error') {
       const workspaces = JSON.parse(output);
       for (const key in workspaces) {
         const workspace = workspaces[key];
@@ -238,7 +238,7 @@ async function ensureBranchesProtection(argv) {
     const id = ruleIds[pattern];
     const notDev = pattern.split('/')[0] !== 'dev';
     const restrictsPushes = notDev || argv.protectDevBranches;
-    const isRelease = pattern.split('/')[0] == 'release';
+    const isRelease = pattern.split('/')[0] === 'release';
     const statusCheckContexts = '["verify"]';
     const mutation = `
       mutation {
@@ -431,7 +431,11 @@ async function mergeCall(argv, keyword) {
     await gitCall('switch', argv.baseRef);
   }
   await ensureBranchesProtection(argv).catch(console.error);
-  await exports.resetDefaultBranch(argv);
+  if (argv.resetDefaultBranch) {
+    await exports.resetDefaultBranch(argv);
+  } else {
+    console.log('> skip resetting default branch');
+  }
 }
 
 exports.resetDefaultBranch = async function (argv) {

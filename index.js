@@ -123,6 +123,7 @@ const main = async function () {
     publish: core.getInput('no-publish') === 'false',
     protection: core.getInput('no-protection') === 'false',
     protectDevBranches: core.getInput('protect-dev-branches') === 'true',
+    resetDefaultBranch: core.getInput('reset-default-branch') !== 'false',
     commitId: context.sha,
     headRef: headRef,
     baseRef: baseRef,
@@ -139,7 +140,11 @@ const main = async function () {
 if (process.env.GITHUB_ACTION) {
   const configPath = path.join(path.dirname(__dirname), 'package.json'); // Find package.json for dist/index.js
   const config = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath)) : {};
-  if (config.name && process.env.GITHUB_ACTION_REPOSITORY === config.name.slice(1)) {
+  if (
+    config.name &&
+    (process.env.GITHUB_ACTION_REPOSITORY === config.name.slice(1) ||
+      process.env.KUNGFU_ACTION_BUMP_VERSION_ALLOW_LOCAL === 'true')
+  ) {
     main().catch((error) => {
       console.error(error);
       core.setFailed(error.message);
