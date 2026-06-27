@@ -1,10 +1,9 @@
-/* eslint-disable no-restricted-globals */
-const { boolean } = require('yargs');
-const lib = require('./lib.js');
+import yargs from 'yargs/yargs';
+import * as lib from './lib.js';
 
 const keywords = ['auto', 'patch', 'premajor', 'preminor', 'prerelease', 'verify'];
 
-exports.argv = require('yargs/yargs')(process.argv.slice(2))
+const argv = yargs(process.argv.slice(2))
   .option('cwd', { type: 'string', default: process.cwd() })
   .option('token', { type: 'string', demandOption: true })
   .option('base-ref', { type: 'string', demandOption: true })
@@ -12,10 +11,10 @@ exports.argv = require('yargs/yargs')(process.argv.slice(2))
   .option('commit-id', { type: 'string' })
   .option('owner', { type: 'string', default: 'kungfu-trader' })
   .option('repo', { type: 'string', default: 'action-bump-version' })
-  .option('protection', { type: boolean, default: true })
-  .option('publish', { type: boolean, default: true })
-  .option('protect-dev-branches', { type: boolean, default: false })
-  .option('dry', { type: boolean })
+  .option('protection', { type: 'boolean', default: true })
+  .option('publish', { type: 'boolean', default: true })
+  .option('protect-dev-branches', { type: 'boolean', default: false })
+  .option('dry', { type: 'boolean' })
   .command(
     'bump <keyword>',
     'bump',
@@ -77,3 +76,5 @@ exports.argv = require('yargs/yargs')(process.argv.slice(2))
   )
   .demandCommand()
   .help().argv;
+
+export { argv };

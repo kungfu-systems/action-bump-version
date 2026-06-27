@@ -1,11 +1,10 @@
-/* eslint-disable no-restricted-globals */
-const github = require('@actions/github');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const git = require('git-client');
-const semver = require('semver');
-const { spawnSync } = require('child_process');
+import * as github from '@actions/github';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import git from 'git-client';
+import semver from 'semver';
+import { spawnSync } from 'node:child_process';
 
 const ProtectedBranchPatterns = ['main', 'release/*/*', 'alpha/*/*', 'dev/*/*'];
 
@@ -432,13 +431,14 @@ async function mergeCall(argv, keyword) {
   }
   await ensureBranchesProtection(argv).catch(console.error);
   if (argv.resetDefaultBranch) {
-    await exports.resetDefaultBranch(argv);
+    await resetDefaultBranch(argv);
   } else {
     console.log('> skip resetting default branch');
   }
 }
 
-exports.resetDefaultBranch = async function (argv) {
+async function resetDefaultBranch(argv) {
+  const octokit = github.getOctokit(argv.token);
   const lastDevVersion = await octokitGraphqlCall(
     argv,
     `
@@ -449,7 +449,7 @@ exports.resetDefaultBranch = async function (argv) {
             node {
              name
             }
-          } 
+          }
         }
       }
     }`,
@@ -464,27 +464,17 @@ exports.resetDefaultBranch = async function (argv) {
     repo: argv.repo,
     default_branch: lastDevName,
   });
-};
+}
 
-exports.getChannel = getChannel;
-
-exports.exec = exec;
-
-exports.gitCall = gitCall;
-
-exports.ensureBranchesProtection = ensureBranchesProtection;
-
-exports.suspendBranchesProtection = suspendBranchesProtection;
-
-exports.setOpts = function (argv) {
+function setOpts(argv) {
   bumpOpts.dry = argv.dry;
-};
+}
 
-exports.currentVersion = () => getCurrentVersion(process.cwd());
+const currentVersion = () => getCurrentVersion(process.cwd());
 
-exports.getBumpKeyword = (argv) => getBumpKeyword(argv.cwd, argv.headRef, argv.baseRef);
+const getBumpKeywordFromArgv = (argv) => getBumpKeyword(argv.cwd, argv.headRef, argv.baseRef);
 
-exports.ensureLerna = (argv) => {
+const ensureLerna = (argv) => {
   if (hasLerna(argv.cwd)) {
     const result = spawnSync('lerna', ['--version'], spawnOpts);
     if (result.status !== 0) {
@@ -493,9 +483,9 @@ exports.ensureLerna = (argv) => {
   }
 };
 
-exports.tryBump = (argv) => bumpCall(argv, getBumpKeyword(argv.cwd, argv.headRef, argv.baseRef));
+const tryBump = (argv) => bumpCall(argv, getBumpKeyword(argv.cwd, argv.headRef, argv.baseRef));
 
-exports.tryPublish = async (argv) => {
+const tryPublish = async (argv) => {
   if (argv.publish) {
     process.env.NODE_AUTH_TOKEN = argv.token;
     const keyword = getBumpKeyword(argv.cwd, argv.headRef, argv.baseRef);
@@ -505,9 +495,9 @@ exports.tryPublish = async (argv) => {
   }
 };
 
-exports.tryMerge = (argv) => mergeCall(argv, getBumpKeyword(argv.cwd, argv.headRef, argv.baseRef, true));
+const tryMerge = (argv) => mergeCall(argv, getBumpKeyword(argv.cwd, argv.headRef, argv.baseRef, true));
 
-exports.verify = async (argv) => {
+const verify = async (argv) => {
   const keyword = getBumpKeyword(argv.cwd, argv.headRef, argv.baseRef);
   if (!keyword) {
     throw new Error(`No rule to bump for head/base refs: ${argv.headRef} -> ${argv.baseRef}`);
@@ -544,4 +534,21 @@ exports.verify = async (argv) => {
     console.error(e);
   }
   return keyword;
+};
+
+export {
+  currentVersion,
+  ensureBranchesProtection,
+  ensureLerna,
+  exec,
+  getBumpKeywordFromArgv as getBumpKeyword,
+  getChannel,
+  gitCall,
+  resetDefaultBranch,
+  setOpts,
+  suspendBranchesProtection,
+  tryBump,
+  tryMerge,
+  tryPublish,
+  verify,
 };

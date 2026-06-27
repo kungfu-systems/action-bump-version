@@ -1,36 +1,31 @@
 {
   "name": "@kungfu-trader/action-bump-version",
   "version": "3.1.35-alpha.1",
+  "type": "module",
   "main": "dist/index.js",
   "repository": "https://github.com/kungfu-trader/action-bump-version",
   "author": "Keren Dong",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn format && yarn dist",
-    "dist": "ncc build index.js",
+    "dist": "ncc build index.js && perl -pi -e 's/[[:blank:]]+$//' dist/index.js",
     "package": "echo noop",
     "format": "prettier --write --parser typescript \"*.js\"",
-    "lint": "eslint --ext .js ."
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@actions/core": "^1.10.0",
-    "@actions/github": "^5.1.0",
-    "git-client": "^1.8.3",
-    "got": "^12.1.0",
-    "semver": "^7.3.7",
-    "yargs": "^16.2.0"
+    "@actions/core": "^3.0.1",
+    "@actions/github": "^9.1.1",
+    "git-client": "^1.12.1",
+    "semver": "^7.8.5",
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "@ls-lint/ls-lint": "^1.11.0",
-    "@typescript-eslint/parser": "^5.0.0",
-    "@vercel/ncc": "^0.34.0",
-    "eslint": "^8.20.0",
-    "prettier": "^2.7.0",
-    "prettier-eslint-cli": "^5.0.0"
-  },
-  "resolutions": {
-    "got": "^12.1.0",
-    "json-schema": "0.4.0",
-    "ansi-regex": "5.0.1"
+    "@eslint/js": "^10.0.1",
+    "@ls-lint/ls-lint": "^2.3.1",
+    "@vercel/ncc": "^0.44.0",
+    "eslint": "^10.6.0",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.0"
   }
 }
