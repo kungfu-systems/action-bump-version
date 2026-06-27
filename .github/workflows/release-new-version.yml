@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   release:
-    uses: kungfu-systems/workflows/.github/workflows/.release-new-version.yml@ci-release-token-runner-stable
+    uses: kungfu-systems/workflows/.github/workflows/.release-new-version.yml@dev/v1/v1.2
     with:
       publish-aws-ci: false
       publish-aws-user: false
