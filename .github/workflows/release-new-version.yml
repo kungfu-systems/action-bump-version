@@ -9,7 +9,7 @@ on:
 
 jobs:
   release:
-    uses: kungfu-systems/workflows/.github/workflows/.release-new-version.yml@dev/v1/v1.2
+    uses: kungfu-systems/workflows/.github/workflows/.release-new-version.yml-release-token-runner-stable
     with:
       publish-aws-ci: false
       publish-aws-user: false
