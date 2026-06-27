@@ -7,6 +7,10 @@ on:
       - release/*/*
       - main
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   try:
     uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@ci-release-token-runner-stable
