@@ -18,6 +18,7 @@ jobs:
       enable-macos: false
       enable-windows: false
       build-container-enabled: false
+      setup-python-enabled: false
       prebuild: true
       publish-versioning: false
       publish-aws-ci: false
