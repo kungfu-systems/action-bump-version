@@ -13,17 +13,17 @@
     "lint": "eslint --ext .js ."
   },
   "dependencies": {
-    "@actions/core": "^1.10.0",
-    "@actions/github": "^5.1.0",
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.1",
     "git-client": "^1.8.3",
     "got": "^12.1.0",
-    "semver": "^7.3.7",
+    "semver": "^7.8.5",
     "yargs": "^16.2.0"
   },
   "devDependencies": {
     "@ls-lint/ls-lint": "^1.11.0",
     "@typescript-eslint/parser": "^5.0.0",
-    "@vercel/ncc": "^0.34.0",
+    "@vercel/ncc": "^0.44.0",
     "eslint": "^8.20.0",
     "prettier": "^2.7.0",
     "prettier-eslint-cli": "^5.0.0"
