@@ -1,17 +1,20 @@
-/* eslint-disable no-restricted-globals */
-const lib = (exports.lib = require('./lib.js'));
-const fs = require('fs');
-const path = require('path');
-const semver = require('semver');
-const core = require('@actions/core');
-const github = require('@actions/github');
+import * as lib from './lib.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import semver from 'semver';
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function getPullRequestNumber() {
   const issue = github.context.issue;
   return issue.number ? issue.number : github.context.payload.pull_request.number;
 }
 
-const setup = (exports.setup = async function (argv) {
+const setup = async function (argv) {
   const context = github.context;
   if (context.eventName === 'pull_request') {
     const octokit = github.getOctokit(argv.token);
@@ -34,9 +37,9 @@ const setup = (exports.setup = async function (argv) {
   await lib.gitCall('config', '--global', 'user.name', argv.actor);
   await lib.gitCall('config', '--global', 'user.email', `${argv.actor}@users.noreply.github.com`);
   lib.ensureLerna(argv);
-});
+};
 
-const teardown = (exports.teardown = async function (argv) {
+const teardown = async function (argv) {
   if (github.context.eventName === 'pull_request' && argv.action === 'verify') {
     const keyword = lib.getBumpKeyword(argv);
     const octokit = github.getOctokit(argv.token);
@@ -54,7 +57,7 @@ const teardown = (exports.teardown = async function (argv) {
             }`;
     await octokit.graphql(mutation);
   }
-});
+};
 
 const prebuild = async (argv) => {
   core.setOutput('prebuild-version', `v${lib.currentVersion()}`);
@@ -99,7 +102,7 @@ const tryClosePullRequest = async (error) => {
   }
 };
 
-const actions = (exports.actions = {
+const actions = {
   auto: async (argv) => {
     await prebuild(argv);
     await postbuild(argv);
@@ -107,7 +110,7 @@ const actions = (exports.actions = {
   prebuild: prebuild,
   postbuild: postbuild,
   verify: lib.verify,
-});
+};
 
 const main = async function () {
   const context = github.context;
@@ -152,3 +155,5 @@ if (process.env.GITHUB_ACTION) {
     });
   }
 }
+
+export { actions, lib, setup, teardown };
