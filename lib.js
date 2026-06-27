@@ -119,6 +119,16 @@ async function gitCall(...args) {
   console.log(output);
 }
 
+async function octokitGraphqlCall(argv, query) {
+  const octokit = github.getOctokit(argv.token);
+  const result = await octokit.graphql(query, {
+    headers: {
+      Connection: 'close',
+    },
+  });
+  return result;
+}
+
 async function bumpCall(argv, keyword, message, tag = true) {
   const version = getCurrentVersion(argv.cwd);
   const nextVersion = semver.inc(version, keyword, 'alpha'); // Get next version to make up message
@@ -157,7 +167,7 @@ async function publishCall(argv) {
     console.log('> detected lerna, use yarn workspaces publish');
     const result = spawnSync('yarn', ['-s', 'workspaces', 'info'], spawnOpts);
     const output = result.output.filter((e) => e && e.length > 0).toString();
-    if (output.toString().split(' ')[0] != 'error') {
+    if (output.toString().split(' ')[0] !== 'error') {
       const workspaces = JSON.parse(output);
       for (const key in workspaces) {
         const workspace = workspaces[key];
@@ -174,11 +184,15 @@ async function publishCall(argv) {
 
 async function getBranchProtectionRulesMap(argv) {
   const ruleIds = {};
-  const octokit = github.getOctokit(argv.token);
 
-  const { repository } = await octokit.graphql(`query{repository(name:"${argv.repo}",owner:"${argv.owner}"){id}}`);
+  const { repository } = await octokitGraphqlCall(
+    argv,
+    `query{repository(name:"${argv.repo}",owner:"${argv.owner}"){id}}`,
+  );
 
-  const rulesQuery = await octokit.graphql(`
+  const rulesQuery = await octokitGraphqlCall(
+    argv,
+    `
         query {
           repository(name: "${argv.repo}", owner: "${argv.owner}") {
             branchProtectionRules(first:100) {
@@ -189,7 +203,8 @@ async function getBranchProtectionRulesMap(argv) {
               }
             }
           }
-        }`);
+        }`,
+  );
 
   for (const rule of rulesQuery.repository.branchProtectionRules.nodes) {
     ruleIds[rule.pattern] = rule.id;
@@ -197,7 +212,9 @@ async function getBranchProtectionRulesMap(argv) {
 
   for (const pattern of ProtectedBranchPatterns.filter((p) => !(p in ruleIds))) {
     console.log(`> creating protection rule for branch name pattern ${pattern}`);
-    const { createBranchProtectionRule } = await octokit.graphql(`
+    const { createBranchProtectionRule } = await octokitGraphqlCall(
+      argv,
+      `
       mutation {
         createBranchProtectionRule(input: {
           repositoryId: "${repository.id}"
@@ -206,7 +223,8 @@ async function getBranchProtectionRulesMap(argv) {
           branchProtectionRule { id }
         }
       }
-    `);
+    `,
+    );
     ruleIds[pattern] = createBranchProtectionRule.branchProtectionRule.id;
   }
   return ruleIds;
@@ -215,13 +233,12 @@ async function getBranchProtectionRulesMap(argv) {
 async function ensureBranchesProtection(argv) {
   if (!argv.protection) return;
 
-  const octokit = github.getOctokit(argv.token);
   const ruleIds = await getBranchProtectionRulesMap(argv);
   for (const pattern in ruleIds) {
     const id = ruleIds[pattern];
     const notDev = pattern.split('/')[0] !== 'dev';
     const restrictsPushes = notDev || argv.protectDevBranches;
-    const isRelease = pattern.split('/')[0] == 'release';
+    const isRelease = pattern.split('/')[0] === 'release';
     const statusCheckContexts = '["verify"]';
     const mutation = `
       mutation {
@@ -248,17 +265,14 @@ async function ensureBranchesProtection(argv) {
       console.log(mutation);
       continue;
     }
-    await octokit.graphql(mutation);
+    await octokitGraphqlCall(argv, mutation);
   }
 }
 
 async function suspendBranchesProtection(argv, branchPatterns = ProtectedBranchPatterns) {
-  console.log('suspendBranchesProtection', argv, branchPatterns);
   if (!argv.protection) return;
 
-  const octokit = github.getOctokit(argv.token);
   const ruleIds = await getBranchProtectionRulesMap(argv);
-  console.log('ruleIds', ruleIds);
   for (const pattern of branchPatterns) {
     const id = ruleIds[pattern];
     const mutation = `
@@ -285,7 +299,7 @@ async function suspendBranchesProtection(argv, branchPatterns = ProtectedBranchP
       console.log(mutation);
       continue;
     }
-    await octokit.graphql(mutation);
+    await octokitGraphqlCall(argv, mutation);
   }
 }
 
@@ -297,7 +311,6 @@ async function mergeCall(argv, keyword) {
     prerelease: ['dev'],
   };
   const branchPatterns = pushTargets[keyword].map((p) => `${p}/*/*`);
-  console.log(`> try to suspend protection for branch patterns ${branchPatterns.join(', ')}`);
   await suspendBranchesProtection(argv, branchPatterns).catch(console.error);
 
   const octokit = github.getOctokit(argv.token);
@@ -418,12 +431,17 @@ async function mergeCall(argv, keyword) {
     await gitCall('switch', argv.baseRef);
   }
   await ensureBranchesProtection(argv).catch(console.error);
-  await exports.resetDefaultBranch(argv);
+  if (argv.resetDefaultBranch) {
+    await exports.resetDefaultBranch(argv);
+  } else {
+    console.log('> skip resetting default branch');
+  }
 }
 
 exports.resetDefaultBranch = async function (argv) {
-  const octokit = github.getOctokit(argv.token);
-  const lastDevVersion = await octokit.graphql(`
+  const lastDevVersion = await octokitGraphqlCall(
+    argv,
+    `
     query {
       repository(owner: "${argv.owner}", name: "${argv.repo}") {
         refs(refPrefix: "refs/heads/dev/", last: 1) {
@@ -434,7 +452,8 @@ exports.resetDefaultBranch = async function (argv) {
           } 
         }
       }
-    }`);
+    }`,
+  );
   if (typeof lastDevVersion.repository.refs.edges[0] === 'undefined') {
     return;
   }
