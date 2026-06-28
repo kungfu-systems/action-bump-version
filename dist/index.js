@@ -39466,8 +39466,12 @@ async function mergeCall(argv, keyword) {
   const versionRef = `v${currentVersion.major}/v${currentVersion.major}.${currentVersion.minor}`;
 
   console.log(`${external_node_os_namespaceObject.EOL}# https://docs.github.com/en/rest/reference/repos#merge-a-branch${external_node_os_namespaceObject.EOL}`);
-  for (const channel of mergeTargets[keyword]) {
-    await mergeRemoteChannel(`${channel}/${versionRef}`);
+  if (argv.skipChannelBranchMerge) {
+    console.log(`> skip merging version tag into protected channel branches: ${mergeTargets[keyword].join(', ')}`);
+  } else {
+    for (const channel of mergeTargets[keyword]) {
+      await mergeRemoteChannel(`${channel}/${versionRef}`);
+    }
   }
 
   if (keyword === 'patch') {
@@ -42670,6 +42674,7 @@ const main = async function () {
     protectDevBranches: getInput('protect-dev-branches') === 'true',
     resetDefaultBranch: getInput('reset-default-branch') !== 'false',
     skipBaseBranchPush: getInput('skip-base-branch-push') === 'true',
+    skipChannelBranchMerge: getInput('skip-channel-branch-merge') === 'true',
     commitId: context.sha,
     headRef: headRef,
     baseRef: baseRef,

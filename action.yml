@@ -23,6 +23,9 @@ inputs:
   skip-base-branch-push:
     description: "Choices [true/false]"
     default: "false"
+  skip-channel-branch-merge:
+    description: "Choices [true/false]"
+    default: "false"
 runs:
   using: "node24"
   main: "dist/index.js"
