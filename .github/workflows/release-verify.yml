@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   try:
-    uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@dev/v2/v2.0
+    uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@v2.0-alpha
     with:
       enable-macos: false
       enable-windows: false
