@@ -21,10 +21,10 @@ release/v<major>/lts
 main
 ```
 
-A minor line such as `v3.1` is promoted through these channels:
+A minor line such as `v4.0` is promoted through these channels:
 
 ```text
-dev/v3/v3.1 -> alpha/v3/v3.1 -> release/v3/v3.1 -> main
+dev/v4/v4.0 -> alpha/v4/v4.0 -> release/v4/v4.0 -> main
 ```
 
 The branch channel determines the version operation:
@@ -140,7 +140,7 @@ on:
 
 jobs:
   try:
-    uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@v1
+    uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@v2
     with:
       enable-macos: false
       enable-windows: false
@@ -151,7 +151,7 @@ jobs:
 
   verify:
     needs: try
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - run: echo verified
 ```
@@ -170,7 +170,7 @@ on:
 
 jobs:
   release:
-    uses: kungfu-systems/workflows/.github/workflows/.release-new-version.yml@v1
+    uses: kungfu-systems/workflows/.github/workflows/.release-new-version.yml@v2
     with:
       publish-aws-ci: false
       publish-aws-user: false
@@ -187,10 +187,10 @@ Caller workflow example:
 ```yaml
 jobs:
   try:
-    uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@ci-release-token-runner-stable
+    uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@dev/v2/v2.0
     with:
       action-bump-version-repository: kungfu-systems/action-bump-version
-      action-bump-version-ref: dev/v3/v3.1
+      action-bump-version-ref: dev/v4/v4.0
       enable-macos: false
       enable-windows: false
       publish-versioning: false
@@ -226,7 +226,7 @@ Default behavior uses GitHub-hosted runners:
 
 ```yaml
 with:
-  build-runner-linux: ubuntu-22.04
+  build-runner-linux: ubuntu-24.04
   build-runner-macos: macos-13
   build-runner-windows: windows-2022
 ```
@@ -253,16 +253,12 @@ run lightweight verification without receiving self-hosted runner access.
 ## Direct Action Usage
 
 Direct usage is still supported for repositories that do not use the shared
-workflow layer, but be aware of the current repository identity guard.
-
-At the time of this document, `package.json` still names the package
-`@kungfu-trader/action-bump-version`. Direct GitHub Action execution checks
-`GITHUB_ACTION_REPOSITORY` against that package identity. Until the package name
-is migrated to `@kungfu-systems/action-bump-version`, direct callers should use
-the legacy action owner, or use the shared workflow layer described above.
+workflow layer. For v4, `package.json` names the package
+`@kungfu-systems/action-bump-version`, so direct GitHub Action execution matches
+the `kungfu-systems/action-bump-version` repository identity guard.
 
 ```yaml
-- uses: kungfu-trader/action-bump-version@v3
+- uses: kungfu-systems/action-bump-version@v4
   with:
     token: ${{ github.token }}
     action: verify
@@ -271,14 +267,14 @@ the legacy action owner, or use the shared workflow layer described above.
 Custom build flow:
 
 ```yaml
-- uses: kungfu-trader/action-bump-version@v3
+- uses: kungfu-systems/action-bump-version@v4
   with:
     token: ${{ github.token }}
     action: prebuild
 
 - run: yarn build
 
-- uses: kungfu-trader/action-bump-version@v3
+- uses: kungfu-systems/action-bump-version@v4
   with:
     token: ${{ github.token }}
     action: postbuild

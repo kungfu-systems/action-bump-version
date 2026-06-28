@@ -1,9 +1,9 @@
 {
-  "name": "@kungfu-trader/action-bump-version",
-  "version": "3.1.35-alpha.5",
+  "name": "@kungfu-systems/action-bump-version",
+  "version": "4.0.0-alpha.0",
   "type": "module",
   "main": "dist/index.js",
-  "repository": "https://github.com/kungfu-trader/action-bump-version",
+  "repository": "https://github.com/kungfu-systems/action-bump-version",
   "author": "Keren Dong",
   "license": "Apache-2.0",
   "scripts": {
