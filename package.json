@@ -7,10 +7,11 @@
   "author": "Keren Dong",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "yarn format && yarn dist",
+    "build": "yarn lint && yarn format:check && yarn dist",
     "dist": "ncc build index.js && perl -pi -e 's/[[:blank:]]+$//' dist/index.js",
     "package": "echo noop",
     "format": "prettier --write --parser typescript \"*.js\"",
+    "format:check": "prettier --check --parser typescript \"*.js\"",
     "lint": "eslint ."
   },
   "dependencies": {
