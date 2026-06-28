@@ -39381,7 +39381,11 @@ async function mergeCall(argv, keyword) {
       // Push release tag
       await gitCall('push', '-f', 'origin', `HEAD:refs/tags/v${version}`);
       // Push release commit
-      await gitCall('push', '-f', 'origin', `HEAD:refs/heads/${argv.baseRef}`);
+      if (argv.skipBaseBranchPush) {
+        console.log(`> skip pushing release commit to protected base branch ${argv.baseRef}`);
+      } else {
+        await gitCall('push', '-f', 'origin', `HEAD:refs/heads/${argv.baseRef}`);
+      }
       // Prepare new prerelease version for alpha channel
       await bumpCall(argv, 'prerelease');
       await pushAlphaVersionTag(getCurrentVersion(argv.cwd));
@@ -42648,6 +42652,7 @@ const main = async function () {
     protection: getInput('no-protection') === 'false',
     protectDevBranches: getInput('protect-dev-branches') === 'true',
     resetDefaultBranch: getInput('reset-default-branch') !== 'false',
+    skipBaseBranchPush: getInput('skip-base-branch-push') === 'true',
     commitId: context.sha,
     headRef: headRef,
     baseRef: baseRef,
