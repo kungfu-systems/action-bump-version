@@ -118,6 +118,19 @@ async function gitCall(...args) {
   console.log(output);
 }
 
+async function deleteLocalTagIfExists(tag) {
+  if (bumpOpts.dry) {
+    console.log(`$ git tag -d ${tag} # if local tag exists`);
+    return;
+  }
+  try {
+    await git('rev-parse', '--verify', `refs/tags/${tag}`);
+  } catch {
+    return;
+  }
+  await gitCall('tag', '-d', tag);
+}
+
 async function octokitGraphqlCall(argv, query) {
   const octokit = github.getOctokit(argv.token);
   const result = await octokit.graphql(query, {
@@ -134,6 +147,10 @@ async function bumpCall(argv, keyword, message, tag = true) {
   const nonReleaseMessageOpt = ['--message', message ? `"${message}"` : `"Move on to v${nextVersion}"`];
   const messageOpt = keyword === 'patch' ? [] : nonReleaseMessageOpt;
   const tagOpt = tag ? [] : ['--no-git-tag-version'];
+
+  if (tag) {
+    await deleteLocalTagIfExists(`v${nextVersion}`);
+  }
 
   if (hasLerna(argv.cwd)) {
     if (keyword === 'patch' || keyword === 'prepatch') {

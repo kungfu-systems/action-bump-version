@@ -90,6 +90,11 @@ resolution, admin enforcement, and no force pushes or deletions. `dev/*/*` keeps
 status-check protection but does not require review or push restriction unless
 `protect-dev-branches` is enabled.
 
+Before creating a version tag, `prebuild` deletes only the matching local tag if
+it already exists. This keeps persistent self-hosted runner workspaces from
+failing on stale local tags while leaving remote tags untouched until `postbuild`
+publishes the intended refs.
+
 Inputs that control protection:
 
 | Input | Default | Meaning |
