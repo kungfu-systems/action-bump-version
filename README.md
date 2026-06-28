@@ -103,6 +103,7 @@ Inputs that control protection:
 | `protect-dev-branches` | `false` | Set to `true` to restrict direct pushes to `dev/*/*`. |
 | `reset-default-branch` | `true` | Set to `false` when a reusable workflow must not rewrite the repository default branch. |
 | `skip-base-branch-push` | `false` | Set to `true` when a protected release branch is already updated by PR merge and must not be force-pushed during `postbuild`. |
+| `skip-channel-branch-merge` | `false` | Set to `true` when protected channel branches such as `alpha/*/*` must not be updated directly by `postbuild`. |
 
 `reset-default-branch=false` is used by the shared release workflow when it runs
 inside a caller repository. It prevents a reusable workflow from changing the
@@ -298,6 +299,7 @@ Custom build flow:
 | `protect-dev-branches` | No | `false` | Set to `true` to restrict direct pushes to `dev/*/*`. |
 | `reset-default-branch` | No | `true` | Set to `false` to skip default-branch reset during merge finalization. |
 | `skip-base-branch-push` | No | `false` | Set to `true` to skip direct `postbuild` pushes to the merged PR base branch. |
+| `skip-channel-branch-merge` | No | `false` | Set to `true` to skip direct `postbuild` merges into protected release/alpha/dev channel branches. |
 
 ## Outputs
 
