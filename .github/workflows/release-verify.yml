@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   try:
-    uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@v2.0-alpha
+    uses: kungfu-systems/workflows/.github/workflows/.release-verify.yml@v2
     with:
       enable-macos: false
       enable-windows: false
@@ -23,7 +23,7 @@ jobs:
       publish-versioning: false
       publish-aws-ci: false
       publish-aws-user: false
-      action-bump-version-ref: dev/v4/v4.0
+      action-bump-version-ref: v4
       build-runner-linux-labels: '["self-hosted","Linux","X64","agent-120","kungfu-build","linux-x64"]'
   
   verify:
