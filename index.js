@@ -128,6 +128,7 @@ const main = async function () {
     protectDevBranches: core.getInput('protect-dev-branches') === 'true',
     resetDefaultBranch: core.getInput('reset-default-branch') !== 'false',
     skipBaseBranchPush: core.getInput('skip-base-branch-push') === 'true',
+    skipChannelBranchMerge: core.getInput('skip-channel-branch-merge') === 'true',
     commitId: context.sha,
     headRef: headRef,
     baseRef: baseRef,
