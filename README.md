@@ -90,6 +90,11 @@ resolution, admin enforcement, and no force pushes or deletions. `dev/*/*` keeps
 status-check protection but does not require review or push restriction unless
 `protect-dev-branches` is enabled.
 
+Before creating a version tag, `prebuild` deletes only the matching local tag if
+it already exists. This keeps persistent self-hosted runner workspaces from
+failing on stale local tags while leaving remote tags untouched until `postbuild`
+publishes the intended refs.
+
 Inputs that control protection:
 
 | Input | Default | Meaning |
@@ -97,6 +102,7 @@ Inputs that control protection:
 | `no-protection` | `false` | Set to `true` to skip branch protection changes. |
 | `protect-dev-branches` | `false` | Set to `true` to restrict direct pushes to `dev/*/*`. |
 | `reset-default-branch` | `true` | Set to `false` when a reusable workflow must not rewrite the repository default branch. |
+| `skip-base-branch-push` | `false` | Set to `true` when a protected release branch is already updated by PR merge and must not be force-pushed during `postbuild`. |
 
 `reset-default-branch=false` is used by the shared release workflow when it runs
 inside a caller repository. It prevents a reusable workflow from changing the
@@ -291,6 +297,7 @@ Custom build flow:
 | `no-protection` | No | `false` | Set to `true` to skip branch protection changes. |
 | `protect-dev-branches` | No | `false` | Set to `true` to restrict direct pushes to `dev/*/*`. |
 | `reset-default-branch` | No | `true` | Set to `false` to skip default-branch reset during merge finalization. |
+| `skip-base-branch-push` | No | `false` | Set to `true` to skip direct `postbuild` pushes to the merged PR base branch. |
 
 ## Outputs
 

@@ -39157,6 +39157,19 @@ async function gitCall(...args) {
   console.log(output);
 }
 
+async function deleteLocalTagIfExists(tag) {
+  if (bumpOpts.dry) {
+    console.log(`$ git tag -d ${tag} # if local tag exists`);
+    return;
+  }
+  try {
+    await git_client('rev-parse', '--verify', `refs/tags/${tag}`);
+  } catch {
+    return;
+  }
+  await gitCall('tag', '-d', tag);
+}
+
 async function octokitGraphqlCall(argv, query) {
   const octokit = getOctokit(argv.token);
   const result = await octokit.graphql(query, {
@@ -39173,6 +39186,10 @@ async function bumpCall(argv, keyword, message, tag = true) {
   const nonReleaseMessageOpt = ['--message', message ? `"${message}"` : `"Move on to v${nextVersion}"`];
   const messageOpt = keyword === 'patch' ? [] : nonReleaseMessageOpt;
   const tagOpt = tag ? [] : ['--no-git-tag-version'];
+
+  if (tag) {
+    await deleteLocalTagIfExists(`v${nextVersion}`);
+  }
 
   if (hasLerna(argv.cwd)) {
     if (keyword === 'patch' || keyword === 'prepatch') {
@@ -39381,7 +39398,11 @@ async function mergeCall(argv, keyword) {
       // Push release tag
       await gitCall('push', '-f', 'origin', `HEAD:refs/tags/v${version}`);
       // Push release commit
-      await gitCall('push', '-f', 'origin', `HEAD:refs/heads/${argv.baseRef}`);
+      if (argv.skipBaseBranchPush) {
+        console.log(`> skip pushing release commit to protected base branch ${argv.baseRef}`);
+      } else {
+        await gitCall('push', '-f', 'origin', `HEAD:refs/heads/${argv.baseRef}`);
+      }
       // Prepare new prerelease version for alpha channel
       await bumpCall(argv, 'prerelease');
       await pushAlphaVersionTag(getCurrentVersion(argv.cwd));
@@ -42648,6 +42669,7 @@ const main = async function () {
     protection: getInput('no-protection') === 'false',
     protectDevBranches: getInput('protect-dev-branches') === 'true',
     resetDefaultBranch: getInput('reset-default-branch') !== 'false',
+    skipBaseBranchPush: getInput('skip-base-branch-push') === 'true',
     commitId: context.sha,
     headRef: headRef,
     baseRef: baseRef,

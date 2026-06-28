@@ -20,6 +20,9 @@ inputs:
   reset-default-branch:
     description: "Choices [true/false]"
     default: "true"
+  skip-base-branch-push:
+    description: "Choices [true/false]"
+    default: "false"
 runs:
   using: "node24"
   main: "dist/index.js"
